@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 12px; background: #fafcff; }
+    h2 { font-size: 1.4em; margin-bottom: 8px; }
+    button, input[type="text"], select {
+      border: none; padding: 6px 14px; border-radius: 4px; font-size: 1em; margin-bottom: 8px;
+    }
+    button { cursor: pointer; background: #4287f5; color: white; margin-right: 8px; }
+    .dashboard-section { display: flex; flex-direction: column; gap: 24px; align-items: stretch; }
+    .charts-container { display: flex; flex-direction: column; gap: 18px; align-items: center; }
+    @media (min-width: 700px) {
+      .dashboard-section { flex-direction: row; gap: 40px; align-items: flex-start; }
+      .charts-container { flex-direction: row; gap: 40px; align-items: flex-start; }
+    }
+    .add-student-form { margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .group-select { margin-right: 10px; font-size: 1em; }
+    .date-del-btn {
+      background: #ea4343;
+      color: #fff;
+      border-radius: 4px;
+      font-size: 0.95em;
+      border: none;
+      padding: 2px 8px;
+      margin: 0 0 0 5px;
+      cursor: pointer;
+    }
+    canvas {
+      background: #f9f9f9; border: 1px solid #ddd; padding: 8px; border-radius: 12px;
+      width: 100% !important; height: auto !important; max-width: 300px; display: block; margin: 0 auto;
+    }
+    .chart-title { font-size: 1em; font-weight: bold; text-align: center; margin-bottom: 0.3em; margin-top: 0.2em; }
+    table {
+      border-collapse: collapse; width: 100%; min-width: 320px; font-size: 0.98em; background: #fff;
+      box-shadow: 0 2px 6px #eee; margin-bottom: 16px; overflow-x: auto; display: block;
+    }
+    th, td { padding: 7px 8px; text-align: center; border: 1px solid #ccc; min-width: 90px; font-size: 0.98em; }
+    th { background: #f2f2f2; position: sticky; top: 0; z-index: 1; }
+    .date-col-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      white-space: nowrap;
+    }
+    td button {
+      width: 80%; min-width: 60px; max-width: 120px; padding: 6px 0; font-size: 0.96em; margin: 0 auto;
+      display: block; background: #f8d7da; color: #541212; border: none; border-radius: 4px; transition: background 0.15s;
+    }
+    td button.present { background: #d4edda; color: #165132; }
+    td .remove-btn {
+      width: 90%; min-width: 60px; background: #ea4343; color: #fff; margin-top: 4px; padding: 4px 0; font-size: 0.95em;
+    }
+    @media (max-width: 600px) {
+      th, td { padding: 7px 4px; min-width: 60px; font-size: 0.92em; }
+      table { font-size: 0.92em; min-width: 220px; }
+      canvas { max-width: 98vw; }
+      .add-student-form input[type="text"] { width: 120px; font-size: 0.95em; }
+      .group-select { font-size: 0.95em; }
+      .charts-container { flex-direction: column; gap: 18px; }
+      .date-col-header { font-size: 0.91em; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+</head>
+<body>
+  <h2>Admin Dashboard</h2>
+  <button onclick="logout()">Logout</button>
+  <form class="add-student-form" id="addStudentForm" onsubmit="addStudent(event)">
+    <select id="groupSelect" class="group-select">
+      <option value="ETC - 1C">ETC - 1C</option>
+      <option value="HRS - 1C">HRS - 1C</option>
+    </select>
+    <input type="text" id="studentNameInput" placeholder="Enter student name" required>
+    <button type="submit">Add Student</button>
+  </form>
+  <div class="dashboard-section">
+    <div class="charts-container">
+      <div>
+        <div class="chart-title">Current Group Attendance</div>
+        <canvas id="attendanceChart" width="320" height="220"></canvas>
+      </div>
+      <div>
+        <div class="chart-title">Overall Attendance (ETC & HRS)</div>
+        <canvas id="overallAttendanceChart" width="320" height="220"></canvas>
+      </div>
+    </div>
+    <div>
+      <table border="1" id="attendanceTable">
+        <thead>
+          <tr id="tableHeaders">
+            <th>Student</th>
+            <!-- Date columns will be injected here -->
+          </tr>
+        </thead>
+        <tbody id="studentTable">
+          <!-- Student rows will be injected here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    // ETC and HRS student lists
+    const initialStudentGroups = {
+      "ETC - 1C": [
+        "ABELLO, QUINT ERGHY BALBOLINA",
+        "BALTAZAR, MARK JADE ALMORFE",
+        "GALAGATE, GERALD MYLES ATONDUCAN",
+        "IGHARAS, JES LORENZ PAALISBO",
+        "JALOCON, JHON RIX DEBAL",
+        "LAURENTE, JOROSS RELOJ",
+        "MAHINAY, ERIC MACALDO",
+        "MOSQUERA, JOMAR APOLINARIO",
+        "PINEDA, MARIA ANGEL BONIFACIO",
+        "REPOLITO, RICHIE BUEN SERRANO",
+        "TORREGOSA, MARK KEVIN ALFONSO",
+        "YERRO, JOHN STEVEN SANTIAGO"
+      ],
+      "HRS - 1C": [
+        "ASIONG, LJ TEJADA",
+        "BALIDIO, DANELYN PANGANIBAN",
+        "BRIGIDO, JANNAH MEI VILLANUEVA",
+        "CATUIRAN, ANNE LORRAINE BRIONES",
+        "DALIDA, JHESSILIE FELIZARDO",
+        "DE TOMAS, LORREINE JOY RUBIAS",
+        "DIOCENA, FRENZH BAMBOO RUIZ",
+        "FLORES, MYLIN TUBERIADEZ",
+        "INCOGNITO, RELIN MAIKA NARCISO",
+        "INGALLA, RICHELLE PEREIRA",
+        "NAYON, LYKA GALLEGO",
+        "PLACIDO, MANILYN ESLAO",
+        "PLACIDO, MELROSE TATOY",
+        "QUIMPO, NENITA GRACE DE JUAN",
+        "REBUTAR, JULIA MARIE TACUD",
+        "REYES, RICH DEN MAY COLOMER",
+        "SANTIAGO, MARY JANE FRANCISCO",
+        "SILAN, CHLOE NAGAMOS",
+        "SUMAOANG, EDRIANE FERNANDO",
+        "TABIOS, LOVELYN BHE NATALIO",
+        "TIBIO, ANDREA NICOLE GEMARANGAN",
+        "TORCUATOR, RACHEL PULVERA",
+        "VILLANUEVA, MAYBETH BALDONADO",
+        "VILLORENTE, JELIAN JAVIER"
+      ]
+    };
+
+    // Use localStorage for persistence
+    function getStudentsFromStorage() {
+      const data = localStorage.getItem('attendance_students');
+      if (data) return JSON.parse(data);
+      // Initialize if not found
+      let students = {};
+      for (let group in initialStudentGroups) {
+        students[group] = initialStudentGroups[group].map(name => ({
+          name,
+          attendance: {}
+        }));
+      }
+      localStorage.setItem('attendance_students', JSON.stringify(students));
+      return students;
+    }
+
+    function saveStudentsToStorage(students) {
+      localStorage.setItem('attendance_students', JSON.stringify(students));
+    }
+
+    let students = getStudentsFromStorage();
+
+    // Helper to get today’s date as YYYY-MM-DD
+    function getToday() {
+      const d = new Date();
+      return d.toISOString().slice(0, 10);
+    }
+
+    // Get all attendance dates in group (history)
+    function getAllGroupDates(group) {
+      const groupStudents = students[group] || [];
+      let datesSet = new Set();
+      groupStudents.forEach(s => {
+        if (s.attendance) {
+          Object.keys(s.attendance).forEach(date => datesSet.add(date));
+        }
+      });
+      // Always add today so a column shows even if today is empty
+      datesSet.add(getToday());
+      const sortedDates = Array.from(datesSet).sort();
+      return sortedDates;
+    }
+
+    // Get all attendance dates in ALL groups (for overall chart)
+    function getAllDatesOverall() {
+      let datesSet = new Set();
+      for (let group in students) {
+        students[group].forEach(s => {
+          if (s.attendance) {
+            Object.keys(s.attendance).forEach(date => datesSet.add(date));
+          }
+        });
+      }
+      datesSet.add(getToday());
+      return Array.from(datesSet).sort();
+    }
+
+    // Remove a specific date from all students in a group
+    function removeDate(date) {
+      const group = document.getElementById('groupSelect').value;
+      students[group].forEach(student => {
+        if (student.attendance && student.attendance[date] !== undefined) {
+          delete student.attendance[date];
+        }
+      });
+      saveStudentsToStorage(students);
+      renderTable();
+      renderCharts();
+    }
+
+    // Render the attendance table with dynamic date columns
+    function renderTable() {
+      const group = document.getElementById('groupSelect').value;
+      const dateColumns = getAllGroupDates(group);
+      const headerRow = document.getElementById("tableHeaders");
+      headerRow.innerHTML = "<th>Student</th>" + dateColumns.map(date => `
+        <th>
+          <span class="date-col-header">${date}
+            <button class="date-del-btn" title="Remove date" onclick="removeDateHandler('${date}')">&times;</button>
+          </span>
+        </th>
+      `).join("");
+
+      const tableBody = document.getElementById("studentTable");
+      const groupStudents = students[group] || [];
+      if (groupStudents.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="${dateColumns.length+1}">No students yet. Add students above.</td></tr>`;
+        return;
+      }
+      tableBody.innerHTML = groupStudents.map((student, idx) => {
+        const row = [ `<td>${student.name}<br>
+        <button class="remove-btn" onclick="removeStudent(${idx})">Remove</button></td>` ];
+        dateColumns.forEach(date => {
+          let status = student.attendance?.[date] || "Absent";
+          row.push(`<td>
+            <button onclick="markAttendance(${idx},'${date}','${status==='Present'?'Absent':'Present'}')" class="${status==='Present'?'present':''}">${status}</button>
+          </td>`);
+        });
+        return `<tr>${row.join("")}</tr>`;
+      }).join("");
+    }
+
+    // Helper for removing date with confirmation
+    function removeDateHandler(date) {
+      if (confirm(`Remove all attendance records for date ${date}? This cannot be undone.`)) {
+        removeDate(date);
+      }
+    }
+
+    // Mark attendance and update chart/table
+    function markAttendance(idx, date, status) {
+      const group = document.getElementById('groupSelect').value;
+      if (students[group][idx]) {
+        if (!students[group][idx].attendance) students[group][idx].attendance = {};
+        students[group][idx].attendance[date] = status;
+        saveStudentsToStorage(students);
+        renderTable();
+        renderCharts();
+      }
+    }
+
+    // Render the pie chart of attendance for current group for TODAY
+    function renderGroupChart() {
+      const group = document.getElementById('groupSelect').value;
+      const today = getToday();
+      const groupStudents = students[group] || [];
+      const present = groupStudents.filter(s => s.attendance && s.attendance[today] === "Present").length;
+      const absent = groupStudents.length - present;
+      const total = groupStudents.length || 1;
+
+      const ctx = document.getElementById("attendanceChart").getContext('2d');
+      if (window.attendancePie) window.attendancePie.destroy();
+      window.attendancePie = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Present', 'Absent'],
+          datasets: [{
+            data: [present, absent],
+            backgroundColor: ['#43ea6e', '#ea4343'],
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom' },
+            datalabels: {
+              color: '#333',
+              font: { weight: 'bold', size: 14 },
+              formatter: function (value, context) {
+                const percent = ((value / total) * 100).toFixed(1);
+                return percent + '%';
+              }
+            },
+            title: { display: false }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+    }
+
+    // Render pie chart for overall ETC & HRS for TODAY
+    function renderOverallChart() {
+      const today = getToday();
+      let present = 0, total = 0;
+      for (const group in students) {
+        const groupStudents = students[group];
+        present += groupStudents.filter(s => s.attendance && s.attendance[today] === "Present").length;
+        total += groupStudents.length;
+      }
+      const absent = total - present;
+      total = total || 1;
+
+      const ctx = document.getElementById("overallAttendanceChart").getContext('2d');
+      if (window.overallAttendancePie) window.overallAttendancePie.destroy();
+      window.overallAttendancePie = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Present', 'Absent'],
+          datasets: [{
+            data: [present, absent],
+            backgroundColor: ['#43ea6e', '#ea4343'],
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom' },
+            datalabels: {
+              color: '#333',
+              font: { weight: 'bold', size: 14 },
+              formatter: function (value, context) {
+                const percent = ((value / total) * 100).toFixed(1);
+                return percent + '%';
+              }
+            },
+            title: { display: false }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+    }
+
+    // Render both charts
+    function renderCharts() {
+      renderGroupChart();
+      renderOverallChart();
+    }
+
+    // Add student
+    function addStudent(event) {
+      event.preventDefault();
+      const input = document.getElementById('studentNameInput');
+      const name = input.value.trim();
+      const group = document.getElementById('groupSelect').value;
+      if (!name) return;
+      students[group].push({ name, attendance: {} });
+      saveStudentsToStorage(students);
+      input.value = "";
+      renderTable();
+      renderCharts();
+    }
+
+    // Remove student
+    function removeStudent(idx) {
+      const group = document.getElementById('groupSelect').value;
+      students[group].splice(idx, 1);
+      saveStudentsToStorage(students);
+      renderTable();
+      renderCharts();
+    }
+
+    // Dummy logout function
+    function logout() {
+      alert("Logged out!");
+    }
+
+    // Main loader
+    function loadAdminDashboard() {
+      students = getStudentsFromStorage();
+      renderTable();
+      renderCharts();
+    }
+    window.loadAdminDashboard = loadAdminDashboard;
+
+    // Update table/chart on group change
+    document.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('groupSelect').addEventListener('change', function() {
+        renderTable();
+        renderCharts();
+      });
+      loadAdminDashboard();
+    });
+
+    // Expose removeDateHandler for inline onclick
+    window.removeDateHandler = removeDateHandler;
+  </script>
+</body>
+</html>

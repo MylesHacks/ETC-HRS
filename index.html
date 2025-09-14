@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Attendance Tracker - Login</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #b5c6e0 0%, #f5f7fa 100%);
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .login-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100vw;
+      min-height: 100vh;
+      justify-content: center;
+    }
+    .photo-slider {
+      width: 350px;
+      max-width: 98vw;
+      height: 180px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 16px rgba(30,72,143,0.12);
+      margin-bottom: 22px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: pan-x;
+      user-select: none;
+      cursor: grab;
+    }
+    .photo-slider-inner {
+      display: flex;
+      height: 100%;
+      transition: transform 0.5s;
+      will-change: transform;
+    }
+    .photo-slide {
+      min-width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #eee;
+      position: relative;
+      z-index: 2;
+    }
+    .photo-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 14px;
+      pointer-events: none;
+      user-select: none;
+    }
+    .login-card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 6px 32px rgba(30, 72, 143, 0.12);
+      padding: 2.5rem 2rem 2rem 2rem;
+      width: 340px;
+      max-width: 95vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: box-shadow 0.2s;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+    .logo img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%; /* Make circle */
+      box-shadow:
+        0 2px 6px rgba(30,72,143,0.12),   /* Soft blue shadow */
+        0 0px 0px 3px #f5f7fa,            /* Outer white ring */
+        0 8px 16px rgba(30,72,143,0.08);  /* Larger blue shadow */
+      background: #fff;
+      object-fit: cover;
+      border: 2px solid #d3d8e8;
+    }
+    h2 {
+      margin-bottom: 18px;
+      color: #1e488f;
+      font-weight: 600;
+      font-size: 1.7rem;
+    }
+    .form-group {
+      width: 100%;
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: #1e488f;
+      font-size: 0.98rem;
+      font-weight: 500;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #d3d8e8;
+      background: #f5f7fa;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    input:focus {
+      border-color: #1e488f;
+      background: #eef2fa;
+    }
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(90deg, #1e488f 65%, #5086e0 100%);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+      box-shadow: 0 2px 12px rgba(30,72,143,0.08);
+    }
+    .btn-primary:hover,
+    .btn-primary:focus {
+      background: linear-gradient(90deg, #5086e0 0%, #1e488f 100%);
+    }
+    .footer {
+      margin-top: 12px;
+      font-size: 0.92rem;
+      color: #464b5e;
+      text-align: center;
+    }
+    .footer a {
+      color: #1e488f;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <!-- Photo slider -->
+    <div class="photo-slider" id="photo-slider">
+      <div class="photo-slider-inner" id="photo-slider-inner">
+        <div class="photo-slide">
+          <img src="received_1508090490539808.jpeg" alt="Attendance Photo 1">
+        </div>
+        <div class="photo-slide">
+          <img src="received_753810147426695.jpeg" alt="Attendance Photo 2">
+        </div>
+        <div class="photo-slide">
+          <img src="received_1293371365563626.jpeg" alt="Attendance Photo 3">
+        </div>
+      </div>
+    </div>
+    <!-- Login card -->
+    <div class="login-card">
+      <div class="logo">
+        <img src="received_4003900713160842.jpeg" alt="Attendance Tracker Logo" />
+      </div>
+      <h2>Login</h2>
+      <form onsubmit="login(event)" aria-label="Login Form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-primary">Login</button>
+      </form>
+      <div class="footer">
+        <p>Forgot your password? <a href="#">Reset here</a></p>
+      </div>
+    </div>
+  </div>
+  <script>
+    function login(event) {
+      event.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      if (username === "admin" && password === "password123") {
+        alert("Login successful!");
+        window.location.href = "dashboard.html";
+      } else {
+        alert("Invalid username or password.");
+      }
+    }
+    // Fixed photo slider logic: always show one image, swipe/drag works
+    document.addEventListener("DOMContentLoaded", function() {
+      const slider = document.getElementById("photo-slider");
+      const inner = document.getElementById("photo-slider-inner");
+      const slides = inner.children;
+      let current = 0;
+      let startX = 0;
+      let deltaX = 0;
+      let isDragging = false;
+      let autoSlideTimer;
+
+      function updateSlider(animate = true) {
+        if (animate) {
+          inner.style.transition = "transform 0.5s";
+        } else {
+          inner.style.transition = "none";
+        }
+        inner.style.transform = `translateX(${-current * slider.offsetWidth}px)`;
+      }
+
+      function nextSlide() {
+        current = (current + 1) % slides.length;
+        updateSlider();
+      }
+
+      function prevSlide() {
+        current = (current - 1 + slides.length) % slides.length;
+        updateSlider();
+      }
+
+      function autoSlide() {
+        autoSlideTimer = setInterval(nextSlide, 5000);
+      }
+
+      function stopAutoSlide() {
+        clearInterval(autoSlideTimer);
+      }
+
+      // Mouse events
+      slider.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.pageX;
+        stopAutoSlide();
+        updateSlider(false);
+      });
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        deltaX = e.pageX - startX;
+        inner.style.transform = `translateX(${-current * slider.offsetWidth + deltaX}px)`;
+      });
+      document.addEventListener('mouseup', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        updateSlider();
+        if (deltaX > 40) prevSlide();
+        else if (deltaX < -40) nextSlide();
+        deltaX = 0;
+        autoSlide();
+      });
+
+      // Touch events
+      slider.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        startX = e.touches[0].pageX;
+        stopAutoSlide();
+        updateSlider(false);
+      });
+      slider.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        deltaX = e.touches[0].pageX - startX;
+        inner.style.transform = `translateX(${-current * slider.offsetWidth + deltaX}px)`;
+      });
+      slider.addEventListener('touchend', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        updateSlider();
+        let endX = e.changedTouches[0].pageX;
+        let totalDelta = endX - startX;
+        if (totalDelta > 40) prevSlide();
+        else if (totalDelta < -40) nextSlide();
+        deltaX = 0;
+        autoSlide();
+      });
+
+      window.addEventListener('resize', () => updateSlider());
+
+      // Prevent image drag
+      Array.from(slides).forEach(slide => {
+        slide.querySelector('img').addEventListener('dragstart', e => e.preventDefault());
+      });
+
+      updateSlider();
+      autoSlide();
+    });
+  </script>
+</body>
+</html>
